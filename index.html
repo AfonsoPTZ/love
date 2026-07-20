@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vem comigo?</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TELA 1: pergunta inicial -->
+  <section id="screen-start" class="screen active">
+    <h1 class="big-question">Topa mais um encontro cmg? 💕</h1>
+    <div class="btn-row">
+      <button id="btn-yes" class="btn btn-yes">Sim</button>
+      <button id="btn-no" class="btn btn-no">Não</button>
+    </div>
+  </section>
+
+  <!-- TELA 2: transição fofa -->
+  <section id="screen-transition" class="screen">
+    <p id="transition-text" class="transition-text"></p>
+  </section>
+
+  <!-- TELA 3: quiz -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-progress">
+      <div id="quiz-progress-bar" class="quiz-progress-bar"></div>
+    </div>
+    <div id="quiz-content" class="quiz-content"></div>
+  </section>
+
+  <!-- TELA 4: resultado -->
+  <section id="screen-result" class="screen">
+    <div id="result-content" class="result-content"></div>
+  </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
