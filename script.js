@@ -83,8 +83,7 @@ const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
 const ACTIVITIES = [
   'Rolê na minha casa (eu cozinho pra você) 🍝',
   'Barzinho com sinuca 🎱',
-  'Parque náutico 🚤',
-  'Eu de skate e você de bike 🛹🚲',
+  'Parque náutico juntos, eu de skate e você de bike 🚤🛹🚲',
   'Dar uma volta na rua 15 🚶‍♀️',
 ];
 
@@ -202,10 +201,10 @@ function renderTimeStep() {
 // ---- passo 4: easter egg "o quão linda você é" ----
 const BEAUTY_OPTIONS = ['Linda', 'Muito linda', 'Muitíssimo linda', 'Impossivelmente linda'];
 const ERROR_MESSAGES = [
-  'erro: valor não cabe em resposta de múltipla escolha',
-  'erro: essa opção também é baixa demais pra realidade',
-  'erro: sistema não suporta esse nível de fofura',
-  'erro: overflow de linda.exe',
+  'Linda? Você acha que é só isso?',
+  'Muito linda? Tá chutando baixo de novo.',
+  'Você tá se valorizando pouco, você é muito mais que isso.',
+  'Conserta já não.',
 ];
 let beautyTriedCount = 0;
 
@@ -241,7 +240,7 @@ function renderEasterEggStep() {
 
 function showBeautyFinalMessage() {
   quizContent.innerHTML = `
-    <h2 class="quiz-question">Viu só? 🥺</h2>
+    <h2 class="quiz-question">Viu só? </h2>
     <p class="beauty-final-message">
       Você é tão linda que nenhuma resposta simples como essas dá conta de explicar.
       Eu ainda não achei uma palavra que chegue perto do quanto você me encanta.
