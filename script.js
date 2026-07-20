@@ -280,7 +280,7 @@ function finishQuiz() {
 // O template deve ter as variáveis: {{date}}, {{activity}}, {{time}}
 const EMAILJS_PUBLIC_KEY = 'Rg3rrNH4td224rOEh';
 const EMAILJS_SERVICE_ID = 'service_1tp99ye';
-const EMAILJS_TEMPLATE_ID = ''; // <- falta preencher
+const EMAILJS_TEMPLATE_ID = 'template_z0st0gu';
 
 function sendResultsEmail(answers) {
   if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
