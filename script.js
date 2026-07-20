@@ -17,6 +17,14 @@ function moveNoButton() {
   const y = margin + Math.random() * (maxY - margin);
 
   if (!noIsRunaway) {
+    // reserva o espaço do botão no layout pra "Sim" não se mover
+    const placeholder = document.createElement('div');
+    placeholder.style.width = rect.width + 'px';
+    placeholder.style.height = rect.height + 'px';
+    placeholder.style.visibility = 'hidden';
+    btnNo.parentNode.insertBefore(placeholder, btnNo);
+
+    btnNo.style.width = rect.width + 'px';
     btnNo.classList.add('runaway');
     noIsRunaway = true;
   }
@@ -166,11 +174,28 @@ function renderActivityStep() {
     <h2 class="quiz-question">O que você quer fazer? 💫</h2>
     <div class="options-list">
       ${ACTIVITIES.map((a, i) => `<button class="quiz-option" data-i="${i}">${a}</button>`).join('')}
+      <button class="quiz-option" id="activity-other-btn">Outro (escrever) ✍️</button>
     </div>
   `;
-  quizContent.querySelectorAll('.quiz-option').forEach(btn => {
+  quizContent.querySelectorAll('.quiz-option[data-i]').forEach(btn => {
     btn.addEventListener('click', () => {
       quizAnswers.activity = ACTIVITIES[btn.dataset.i];
+      goToNextStep();
+    });
+  });
+
+  document.getElementById('activity-other-btn').addEventListener('click', () => {
+    quizContent.innerHTML = `
+      <h2 class="quiz-question">Manda ver, o que você quer fazer? ✍️</h2>
+      <textarea id="activity-other-input" class="text-input" placeholder="Escreve aqui..." rows="4"></textarea>
+      <button id="activity-other-confirm" class="btn btn-yes" style="margin-top: 16px;">Confirmar</button>
+    `;
+    const input = document.getElementById('activity-other-input');
+    input.focus();
+    document.getElementById('activity-other-confirm').addEventListener('click', () => {
+      const value = input.value.trim();
+      if (!value) return;
+      quizAnswers.activity = value;
       goToNextStep();
     });
   });
@@ -264,7 +289,12 @@ function finishQuiz() {
     </div>
     <p class="result-closing">Muito bom, meu anjo 😘</p>
     <div class="floating-hearts">💗💋💗</div>
+    <button id="btn-exit" class="btn btn-no" style="margin-top: 24px;">Sair</button>
   `;
+
+  document.getElementById('btn-exit').addEventListener('click', () => {
+    window.close();
+  });
 
   sendResultsEmail(quizAnswers);
 }

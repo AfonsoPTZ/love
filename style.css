@@ -271,6 +271,23 @@ body {
   padding: 12px 6px;
 }
 
+/* ---- input de texto livre (opção "outro") ---- */
+.text-input {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  border: 2px solid var(--pink);
+  border-radius: 14px;
+  font-family: inherit;
+  color: var(--text);
+  resize: none;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--pink-dark);
+}
+
 /* ---- easter egg Q4 ---- */
 .beauty-option.tried {
   opacity: 0.5;
