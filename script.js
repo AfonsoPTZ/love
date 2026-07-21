@@ -438,7 +438,7 @@ function showBeautyFinalMessage() {
       <h2 class="quiz-question">Viu só? </h2>
       <p class="beauty-final-message">
         Você é maravilhosa, encantadora, inesquecível e um acontecimento raro — tudo ao mesmo tempo. Nenhuma resposta simples como essas dá conta de explicar.
-        Eu ainda não achei uma palavra que chegue perto do quanto você me encanta.
+        Eu ainda não achei uma palavra que chegue perto do quanto você me encanta, então escolhi algumas músicas que talvez expliquem melhor.
       </p>
       <button id="btn-continue-result" class="btn btn-yes" style="margin-top: 20px;">Continuar</button>
     </div>
