@@ -1,3 +1,9 @@
+// ---- trava o scroll da página inteira, mesmo tentando arrastar no celular ----
+document.addEventListener('touchmove', (e) => {
+  if (e.target.closest && e.target.closest('#music-progress')) return; // não trava o arrastar da barra de música
+  e.preventDefault();
+}, { passive: false });
+
 // ---- player de música ----
 const PLAYLIST = [
   { title: 'Céu Azul — Charlie Brown Jr', src: 'music/Charlie Brown Jr - Céu Azul.mp3' },
@@ -459,13 +465,7 @@ function finishQuiz() {
     </div>
 
     <p class="result-ps">🌙 Lembrando que uns beijinhos antes de dormir ajudam a aliviar o estresse. 😏</p>
-
-    <button id="btn-restart" class="subtle-link" style="align-self: center; margin-top: 6px;">‹ voltar pro início</button>
   `);
-
-  document.getElementById('btn-restart').addEventListener('click', () => {
-    showScreen('screen-start');
-  });
 
   sendResultsEmail(quizAnswers);
 }
