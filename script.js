@@ -1,3 +1,89 @@
+// ---- player de música ----
+const PLAYLIST = [
+  { title: 'Céu Azul — Charlie Brown Jr', src: 'music/Charlie Brown Jr - Céu Azul.mp3' },
+  { title: 'Velha Infância — Tribalistas', src: 'music/tribalistas-velha-infancia_mV2jb8Ys.mp3' },
+  { title: 'Sutilmente', src: 'music/01. Sutilmente .mp3' },
+  { title: 'Partilhar — Rubel', src: 'music/Rubel_-_Partilhar_(mp3.pm) (2).mp3' },
+  { title: 'Ela Só Quer Paz — Projota', src: 'music/projota-ela-so-quer-paz_2yJtSJVM.mp3' },
+];
+
+let currentTrack = 0;
+const audio = document.getElementById('audio-player');
+const musicTrackName = document.getElementById('music-track-name');
+const musicPlayPauseBtn = document.getElementById('music-playpause');
+const musicProgressBar = document.getElementById('music-progress-bar');
+const iconPlay = document.getElementById('icon-play');
+const iconPause = document.getElementById('icon-pause');
+
+function loadTrack(index, autoplay) {
+  currentTrack = (index + PLAYLIST.length) % PLAYLIST.length;
+  audio.src = encodeURI(PLAYLIST[currentTrack].src);
+  musicTrackName.textContent = PLAYLIST[currentTrack].title;
+  if (autoplay) audio.play().catch(() => {});
+}
+
+musicPlayPauseBtn.addEventListener('click', () => {
+  if (audio.paused) {
+    audio.play().catch(() => {});
+  } else {
+    audio.pause();
+  }
+});
+
+document.getElementById('music-next').addEventListener('click', () => loadTrack(currentTrack + 1, true));
+document.getElementById('music-prev').addEventListener('click', () => loadTrack(currentTrack - 1, true));
+
+audio.addEventListener('play', () => {
+  iconPlay.style.display = 'none';
+  iconPause.style.display = '';
+});
+audio.addEventListener('pause', () => {
+  iconPlay.style.display = '';
+  iconPause.style.display = 'none';
+});
+audio.addEventListener('ended', () => loadTrack(currentTrack + 1, true));
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration) {
+    musicProgressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+  }
+});
+
+// clicar/arrastar na barra pra pular pra qualquer ponto da música
+const musicProgress = document.getElementById('music-progress');
+
+function seekToEvent(e) {
+  if (!audio.duration) return;
+  const rect = musicProgress.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  audio.currentTime = ratio * audio.duration;
+  musicProgressBar.style.width = (ratio * 100) + '%';
+}
+
+let isSeeking = false;
+musicProgress.addEventListener('pointerdown', (e) => {
+  isSeeking = true;
+  seekToEvent(e);
+});
+document.addEventListener('pointermove', (e) => {
+  if (isSeeking) seekToEvent(e);
+});
+document.addEventListener('pointerup', () => { isSeeking = false; });
+
+loadTrack(0, false);
+
+// navegadores só deixam tocar áudio com som depois de uma interação do usuário
+let musicStarted = false;
+function startMusicOnce() {
+  if (musicStarted) return;
+  musicStarted = true;
+  audio.play().catch(() => {});
+  document.removeEventListener('click', startMusicOnce);
+  document.removeEventListener('touchstart', startMusicOnce);
+}
+document.addEventListener('click', startMusicOnce);
+document.addEventListener('touchstart', startMusicOnce);
+
 // ---- navegação entre telas ----
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -53,9 +139,7 @@ btnNo.addEventListener('click', (e) => {
 
 // ---- botão "Sim" -> transição ----
 const cuteMessages = [
-  'Ainda bem... eu sabia que você ia dizer sim 🥹',
-  'Uhuul! Bora planejar nosso próximo encontro 💕',
-];
+  'Ainda bem... eu sabia que você ia dizer sim ¯\\_(ツ)_/¯ '];
 
 document.getElementById('btn-yes').addEventListener('click', () => {
   showScreen('screen-transition');
@@ -74,6 +158,7 @@ document.getElementById('btn-yes').addEventListener('click', () => {
 const TOTAL_STEPS = 4; // data, atividade, horário, easter egg
 const quizContent = document.getElementById('quiz-content');
 const quizProgressBar = document.getElementById('quiz-progress-bar');
+const quizBackBtn = document.getElementById('quiz-back-btn');
 
 const quizAnswers = {
   date: null,      // ex: "24/07"
@@ -83,6 +168,7 @@ const quizAnswers = {
 
 let currentStep = 0;
 let calendarMonthOffset = 0; // 0 = mês atual, 1 = próximo mês
+let navHistory = []; // pilha de telas anteriores, pra voltar de verdade
 
 const WEEKDAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -91,21 +177,61 @@ const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
 const ACTIVITIES = [
   'Rolê na minha casa (eu cozinho pra você) 🍝',
   'Barzinho com sinuca 🎱',
-  'Parque náutico juntos, eu de skate e você de bike 🚤🛹🚲',
+  'Parque náutico juntos, eu de skate e você de bike 🛹🚲',
   'Dar uma volta na rua 15 🚶‍♀️',
 ];
+
+const ACTIVITY_MESSAGES = [
+  'Só não vou conseguir cozinhar tão bem quanto você kkk',
+  'Quem perder na mesa paga a conta 😏🎱',
+  'Pode apostar que eu sou muito mais rápido no skate do que você de bike kakakaka',
+  'Vamos ter que levar uns beck pra fumar por lá kakakaka',
+];
+
+function shakeScreen() {
+  document.body.classList.add('shake');
+  setTimeout(() => document.body.classList.remove('shake'), 400);
+}
+
+// aplica fade-in suave toda vez que o conteúdo de um container é trocado
+function renderInto(el, html) {
+  el.classList.remove('fade-in-up');
+  el.innerHTML = html;
+  void el.offsetWidth; // força reflow pra animação reiniciar
+  el.classList.add('fade-in-up');
+}
 
 function updateProgress() {
   quizProgressBar.style.width = ((currentStep) / TOTAL_STEPS * 100) + '%';
 }
 
+function updateBackButtonVisibility() {
+  quizBackBtn.classList.toggle('hidden', navHistory.length === 0);
+}
+
+function goToScreen(renderCurrentAgainFn, renderNextFn) {
+  navHistory.push(renderCurrentAgainFn);
+  updateBackButtonVisibility();
+  renderNextFn();
+}
+
+function goBack() {
+  const prevRender = navHistory.pop();
+  updateBackButtonVisibility();
+  if (prevRender) prevRender();
+}
+
+quizBackBtn.addEventListener('click', goBack);
+
 function initQuiz() {
   currentStep = 0;
   calendarMonthOffset = 0;
+  navHistory = [];
   quizAnswers.date = null;
   quizAnswers.activity = null;
   quizAnswers.time = null;
   updateProgress();
+  updateBackButtonVisibility();
   renderDateStep();
 }
 
@@ -133,11 +259,11 @@ function renderDateStep() {
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const cellDate = new Date(year, month, d);
-    const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isPast = cellDate <= new Date(today.getFullYear(), today.getMonth(), today.getDate());
     cells += `<button class="cal-day${isPast ? ' cal-disabled' : ''}" ${isPast ? 'disabled' : ''} data-day="${d}">${d}</button>`;
   }
 
-  quizContent.innerHTML = `
+  renderInto(quizContent, `
     <h2 class="quiz-question">Que dia você tá livre? 📅</h2>
     <div class="cal-header">
       <button id="cal-prev" class="cal-nav" ${calendarMonthOffset === 0 ? 'disabled' : ''}>‹</button>
@@ -148,7 +274,7 @@ function renderDateStep() {
       ${WEEKDAYS.map(w => `<div class="cal-weekday">${w}</div>`).join('')}
     </div>
     <div class="cal-grid">${cells}</div>
-  `;
+  `);
 
   document.getElementById('cal-prev').addEventListener('click', () => {
     calendarMonthOffset--;
@@ -163,6 +289,8 @@ function renderDateStep() {
     btn.addEventListener('click', () => {
       const day = btn.dataset.day;
       quizAnswers.date = `${day} de ${MONTHS[month]}`;
+      navHistory.push(() => renderDateStep());
+      updateBackButtonVisibility();
       goToNextStep();
     });
   });
@@ -170,78 +298,111 @@ function renderDateStep() {
 
 // ---- passo 2: atividade ----
 function renderActivityStep() {
-  quizContent.innerHTML = `
+  renderInto(quizContent, `
     <h2 class="quiz-question">O que você quer fazer? 💫</h2>
     <div class="options-list">
       ${ACTIVITIES.map((a, i) => `<button class="quiz-option" data-i="${i}">${a}</button>`).join('')}
       <button class="quiz-option" id="activity-other-btn">Outro (escrever) ✍️</button>
     </div>
-  `;
+  `);
   quizContent.querySelectorAll('.quiz-option[data-i]').forEach(btn => {
     btn.addEventListener('click', () => {
-      quizAnswers.activity = ACTIVITIES[btn.dataset.i];
-      goToNextStep();
+      const i = btn.dataset.i;
+      quizAnswers.activity = ACTIVITIES[i];
+      navHistory.push(() => renderActivityStep());
+      updateBackButtonVisibility();
+      showActivityMessage(ACTIVITY_MESSAGES[i]);
     });
   });
 
   document.getElementById('activity-other-btn').addEventListener('click', () => {
-    quizContent.innerHTML = `
-      <h2 class="quiz-question">Manda ver, o que você quer fazer? ✍️</h2>
-      <textarea id="activity-other-input" class="text-input" placeholder="Escreve aqui..." rows="4"></textarea>
-      <button id="activity-other-confirm" class="btn btn-yes" style="margin-top: 16px;">Confirmar</button>
-    `;
-    const input = document.getElementById('activity-other-input');
-    input.focus();
-    document.getElementById('activity-other-confirm').addEventListener('click', () => {
-      const value = input.value.trim();
-      if (!value) return;
-      quizAnswers.activity = value;
-      goToNextStep();
-    });
+    navHistory.push(() => renderActivityStep());
+    updateBackButtonVisibility();
+    renderActivityOtherStep();
   });
 }
 
-// ---- passo 3: horário (relógio custom) ----
-function renderTimeStep() {
-  const times = [];
-  for (let h = 10; h <= 23; h++) {
-    times.push(`${String(h).padStart(2, '0')}:00`);
-    if (h !== 23) times.push(`${String(h).padStart(2, '0')}:30`);
-  }
+function renderActivityOtherStep() {
+  renderInto(quizContent, `
+    <h2 class="quiz-question">Manda ver, o que você quer fazer? ✍️</h2>
+    <textarea id="activity-other-input" class="text-input" placeholder="Escreve aqui..." rows="4"></textarea>
+    <p id="activity-other-error" class="field-error"></p>
+    <button id="activity-other-confirm" class="btn btn-yes" style="margin-top: 16px;">Confirmar</button>
+  `);
+  const input = document.getElementById('activity-other-input');
+  const errorEl = document.getElementById('activity-other-error');
+  input.focus();
+  document.getElementById('activity-other-confirm').addEventListener('click', () => {
+    const value = input.value.trim();
+    if (!value) {
+      shakeScreen();
+      errorEl.textContent = 'Bora, fala o que quer fazer';
+      return;
+    }
+    quizAnswers.activity = value;
+    navHistory.push(() => renderActivityOtherStep());
+    updateBackButtonVisibility();
+    showActivityMessage('Não sei o que é, mas certeza que eu do futuro vou adorar 😏');
+  });
+}
 
-  quizContent.innerHTML = `
-    <h2 class="quiz-question">Qual horário do nosso rolê? 🕒</h2>
-    <div class="time-grid">
-      ${times.map(t => `<button class="quiz-option time-option">${t}</button>`).join('')}
+function showActivityMessage(message) {
+  renderInto(quizContent, `
+    <div class="message-card">
+      <p class="activity-message">${message}</p>
+      <button id="activity-message-continue" class="btn btn-yes" style="margin-top: 20px;">Continuar</button>
     </div>
-  `;
-  quizContent.querySelectorAll('.time-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      quizAnswers.time = btn.textContent;
-      goToNextStep();
-    });
+  `);
+  document.getElementById('activity-message-continue').addEventListener('click', () => {
+    navHistory.push(() => showActivityMessage(message));
+    updateBackButtonVisibility();
+    goToNextStep();
   });
 }
 
-// ---- passo 4: easter egg "o quão linda você é" ----
-const BEAUTY_OPTIONS = ['Linda', 'Muito linda', 'Muitíssimo linda', 'Impossivelmente linda'];
+// ---- passo 3: horário ----
+function renderTimeStep() {
+  renderInto(quizContent, `
+    <h2 class="quiz-question">Qual horário do nosso rolê? 🕒</h2>
+    <input type="time" id="time-other-input" class="text-input time-native-input">
+    <p id="time-other-error" class="field-error"></p>
+    <button id="time-other-confirm" class="btn btn-yes" style="margin-top: 16px;">Confirmar</button>
+  `);
+  const input = document.getElementById('time-other-input');
+  const errorEl = document.getElementById('time-other-error');
+  input.focus();
+  document.getElementById('time-other-confirm').addEventListener('click', () => {
+    if (!input.value) {
+      shakeScreen();
+      errorEl.textContent = 'Esqueceu de colocar o horário, fia';
+      return;
+    }
+    quizAnswers.time = input.value;
+    navHistory.push(() => renderTimeStep());
+    updateBackButtonVisibility();
+    goToNextStep();
+  });
+}
+
+// ---- passo 4: easter egg "o quão maravilhosa você é" ----
+const BEAUTY_OPTIONS = ['Maravilhosa', 'Encantadora', 'Inesquecível', 'Um acontecimento raro ✨'];
 const ERROR_MESSAGES = [
-  'Linda? Você acha que é só isso?',
-  'Muito linda? Tá chutando baixo de novo.',
-  'Você tá se valorizando pouco, você é muito mais que isso.',
-  'Conserta já não.',
+  'Maravilhosa? Isso nem chega perto 😂',
+  'Encantadora... tá chegando mais perto.',
+  'Inesquecível já combina bem mais.',
+  'Um acontecimento raro? Agora sim, quase lá.',
 ];
 let beautyTriedCount = 0;
 
 function renderEasterEggStep() {
   beautyTriedCount = 0;
-  quizContent.innerHTML = `
-    <h2 class="quiz-question">E o quão linda você é? 😍</h2>
+  renderInto(quizContent, `
+    <h2 class="quiz-question">💖 O quão maravilhosa você é?</h2>
     <div class="options-list">
       ${BEAUTY_OPTIONS.map((o, i) => `<button class="quiz-option beauty-option" data-i="${i}">${o}</button>`).join('')}
     </div>
     <p id="beauty-error" class="beauty-error"></p>
-  `;
+  `);
 
   const errorEl = document.getElementById('beauty-error');
 
@@ -250,28 +411,32 @@ function renderEasterEggStep() {
       if (btn.classList.contains('tried')) return;
       btn.classList.add('tried');
 
-      document.getElementById('screen-quiz').classList.add('shake');
-      setTimeout(() => document.getElementById('screen-quiz').classList.remove('shake'), 400);
+      document.body.classList.add('shake');
+      setTimeout(() => document.body.classList.remove('shake'), 400);
 
-      errorEl.textContent = ERROR_MESSAGES[beautyTriedCount % ERROR_MESSAGES.length];
+      errorEl.textContent = ERROR_MESSAGES[btn.dataset.i];
       beautyTriedCount++;
 
       if (beautyTriedCount >= BEAUTY_OPTIONS.length) {
-        setTimeout(showBeautyFinalMessage, 500);
+        navHistory.push(() => renderEasterEggStep());
+        updateBackButtonVisibility();
+        setTimeout(showBeautyFinalMessage, 2300);
       }
     });
   });
 }
 
 function showBeautyFinalMessage() {
-  quizContent.innerHTML = `
-    <h2 class="quiz-question">Viu só? </h2>
-    <p class="beauty-final-message">
-      Você é tão linda que nenhuma resposta simples como essas dá conta de explicar.
-      Eu ainda não achei uma palavra que chegue perto do quanto você me encanta.
-    </p>
-    <button id="btn-continue-result" class="btn btn-yes" style="margin-top: 24px;">Continuar</button>
-  `;
+  renderInto(quizContent, `
+    <div class="message-card">
+      <h2 class="quiz-question">Viu só? </h2>
+      <p class="beauty-final-message">
+        Você é maravilhosa, encantadora, inesquecível e um acontecimento raro — tudo ao mesmo tempo. Nenhuma resposta simples como essas dá conta de explicar.
+        Eu ainda não achei uma palavra que chegue perto do quanto você me encanta.
+      </p>
+      <button id="btn-continue-result" class="btn btn-yes" style="margin-top: 20px;">Continuar</button>
+    </div>
+  `);
   document.getElementById('btn-continue-result').addEventListener('click', () => {
     goToNextStep();
   });
@@ -280,20 +445,26 @@ function showBeautyFinalMessage() {
 // ---- resultado final ----
 function finishQuiz() {
   showScreen('screen-result');
-  document.getElementById('result-content').innerHTML = `
+  renderInto(document.getElementById('result-content'), `
     <h1 class="result-title">Nosso próximo encontro 💕</h1>
     <div class="result-card">
       <p><strong>Dia:</strong> ${quizAnswers.date}</p>
       <p><strong>Programa:</strong> ${quizAnswers.activity}</p>
       <p><strong>Horário:</strong> ${quizAnswers.time}</p>
     </div>
-    <p class="result-closing">Muito bom, meu anjo 😘</p>
-    <div class="floating-hearts">💗💋💗</div>
-    <button id="btn-exit" class="btn btn-no" style="margin-top: 24px;">Sair</button>
-  `;
+    <p class="result-closing">Muito obrigado pela atenção, meu anjo 😘</p>
 
-  document.getElementById('btn-exit').addEventListener('click', () => {
-    window.close();
+    <div class="invite-image-wrap">
+      <img src="images.jpg" alt="Convite" class="invite-image">
+    </div>
+
+    <p class="result-ps">🌙 Lembrando que uns beijinhos antes de dormir ajudam a aliviar o estresse. 😏</p>
+
+    <button id="btn-restart" class="subtle-link" style="align-self: center; margin-top: 6px;">‹ voltar pro início</button>
+  `);
+
+  document.getElementById('btn-restart').addEventListener('click', () => {
+    showScreen('screen-start');
   });
 
   sendResultsEmail(quizAnswers);
