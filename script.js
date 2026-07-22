@@ -186,7 +186,7 @@ const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
 const ACTIVITIES = [
-  'Rolê na minha casa (eu cozinho pra você) 🍝',
+  'Rolêzinho de janta na casa de um dos 2 🍝',
   'Barzinho com sinuca 🎱',
   'Parque náutico juntos, eu de skate e você de bike 🛹🚲',
   'Dar uma volta na rua 15 🚶‍♀️',
