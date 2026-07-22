@@ -178,7 +178,7 @@ const quizAnswers = {
 };
 
 let currentStep = 0;
-let calendarMonthOffset = 0; // 0 = mês atual, 1 = próximo mês
+let calendarMonthOffset = 0; // 0 = mês atual, 1 = próximo mê
 let navHistory = []; // pilha de telas anteriores, pra voltar de verdade
 
 const WEEKDAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
