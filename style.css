@@ -609,6 +609,63 @@ body {
   50% { transform: scale(1.2); }
 }
 
+/* ---- animação de clique (ripple) ---- */
+.btn,
+.quiz-option,
+.cal-day,
+.cal-nav,
+.music-btn,
+.quiz-back-btn,
+.subtle-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.click-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  transform: scale(0);
+  pointer-events: none;
+  animation: clickRipple 0.5s ease-out forwards;
+}
+
+.btn-no .click-ripple,
+.quiz-option .click-ripple,
+.cal-day .click-ripple {
+  background: rgba(214, 67, 110, 0.25);
+}
+
+@keyframes clickRipple {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* ---- coraçõezinhos tipo confete ao clicar ---- */
+.click-heart {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1rem;
+  z-index: 9999;
+  animation: heartConfetti 0.8s ease-out forwards;
+  --tx: 0px;
+  --ty: 0px;
+  --rot: 0deg;
+}
+
+@keyframes heartConfetti {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1);
+    opacity: 0;
+  }
+}
+
 /* shake usado no easter egg da Q4 */
 .shake {
   animation: shake 0.4s ease;

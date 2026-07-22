@@ -95,6 +95,48 @@ function startMusicOnce() {
 document.addEventListener('click', startMusicOnce);
 document.addEventListener('touchstart', startMusicOnce);
 
+// ---- animação de clique (ripple) em qualquer botão ----
+const RIPPLE_SELECTOR = '.btn, .quiz-option, .cal-day, .cal-nav, .music-btn, .quiz-back-btn, .subtle-link';
+
+function spawnRipple(target, x, y) {
+  const rect = target.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const ripple = document.createElement('span');
+  ripple.className = 'click-ripple';
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (x - rect.left - size / 2) + 'px';
+  ripple.style.top = (y - rect.top - size / 2) + 'px';
+  target.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+}
+
+const HEART_EMOJIS = ['💖', '💕', '💗', '💓', '❤️'];
+
+function spawnHeartConfetti(x, y) {
+  const count = 6;
+  for (let i = 0; i < count; i++) {
+    const heart = document.createElement('span');
+    heart.className = 'click-heart';
+    heart.textContent = HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
+    const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.6 - 0.3);
+    const distance = 40 + Math.random() * 40;
+    heart.style.left = x + 'px';
+    heart.style.top = y + 'px';
+    heart.style.setProperty('--tx', (Math.cos(angle) * distance) + 'px');
+    heart.style.setProperty('--ty', (Math.sin(angle) * distance - 20) + 'px');
+    heart.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+    document.body.appendChild(heart);
+    heart.addEventListener('animationend', () => heart.remove());
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const target = e.target.closest(RIPPLE_SELECTOR);
+  if (!target || target.disabled) return;
+  spawnRipple(target, e.clientX, e.clientY);
+  spawnHeartConfetti(e.clientX, e.clientY);
+});
+
 // ---- navegação entre telas ----
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
