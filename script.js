@@ -33,6 +33,23 @@ function loadTrack(index, autoplay) {
   updateMediaSessionMetadata();
   if (autoplay) tryPlay();
   if (playlistPanel && playlistPanel.classList.contains('open')) renderPlaylistList();
+  preloadNeighbors();
+}
+
+// baixa a música anterior e a próxima em segundo plano, pra trocar de faixa
+// não ter que esperar o download (fica pronto no cache do navegador)
+const preloadedTracks = new Set();
+function preloadTrack(index) {
+  const i = (index + PLAYLIST.length) % PLAYLIST.length;
+  if (preloadedTracks.has(i)) return;
+  preloadedTracks.add(i);
+  const a = new Audio();
+  a.preload = 'auto';
+  a.src = encodeURI(PLAYLIST[i].src);
+}
+function preloadNeighbors() {
+  preloadTrack(currentTrack + 1);
+  preloadTrack(currentTrack - 1);
 }
 
 // no celular, trocar de música com a aba em segundo plano às vezes é bloqueado
