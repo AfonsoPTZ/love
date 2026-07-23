@@ -31,6 +31,7 @@ function loadTrack(index, autoplay) {
   audio.src = encodeURI(PLAYLIST[currentTrack].src);
   musicTrackName.textContent = PLAYLIST[currentTrack].title;
   if (autoplay) audio.play().catch(() => {});
+  if (playlistPanel && playlistPanel.classList.contains('open')) renderPlaylistList();
 }
 
 musicPlayPauseBtn.addEventListener('click', () => {
@@ -43,6 +44,42 @@ musicPlayPauseBtn.addEventListener('click', () => {
 
 document.getElementById('music-next').addEventListener('click', () => loadTrack(currentTrack + 1, true));
 document.getElementById('music-prev').addEventListener('click', () => loadTrack(currentTrack - 1, true));
+
+// ---- playlist ----
+const playlistPanel = document.getElementById('playlist-panel');
+const playlistBackdrop = document.getElementById('playlist-backdrop');
+const playlistList = document.getElementById('playlist-list');
+
+function renderPlaylistList() {
+  playlistList.innerHTML = PLAYLIST.map((track, i) => `
+    <button class="playlist-item${i === currentTrack ? ' active' : ''}" data-i="${i}">
+      <span class="playlist-item-name">${track.title}</span>
+      ${i === currentTrack ? '<span class="playlist-item-playing">♪</span>' : ''}
+    </button>
+  `).join('');
+
+  playlistList.querySelectorAll('.playlist-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadTrack(Number(btn.dataset.i), true);
+      closePlaylist();
+    });
+  });
+}
+
+function openPlaylist() {
+  renderPlaylistList();
+  playlistPanel.classList.add('open');
+  playlistBackdrop.classList.add('open');
+}
+
+function closePlaylist() {
+  playlistPanel.classList.remove('open');
+  playlistBackdrop.classList.remove('open');
+}
+
+document.getElementById('music-playlist-btn').addEventListener('click', openPlaylist);
+document.getElementById('playlist-close-btn').addEventListener('click', closePlaylist);
+playlistBackdrop.addEventListener('click', closePlaylist);
 
 audio.addEventListener('play', () => {
   iconPlay.style.display = 'none';
@@ -87,10 +124,13 @@ loadTrack(0, false);
 let musicStarted = false;
 function startMusicOnce() {
   if (musicStarted) return;
-  musicStarted = true;
-  audio.play().catch(() => {});
-  document.removeEventListener('click', startMusicOnce);
-  document.removeEventListener('touchstart', startMusicOnce);
+  audio.play().then(() => {
+    musicStarted = true;
+    document.removeEventListener('click', startMusicOnce);
+    document.removeEventListener('touchstart', startMusicOnce);
+  }).catch(() => {
+    // falhou (comum no celular na 1ª tentativa) — mantém os listeners pra tentar de novo no próximo toque
+  });
 }
 document.addEventListener('click', startMusicOnce);
 document.addEventListener('touchstart', startMusicOnce);
@@ -417,7 +457,7 @@ function showActivityMessage(message) {
 function renderTimeStep() {
   renderInto(quizContent, `
     <h2 class="quiz-question">Qual horário do nosso rolê? 🕒</h2>
-    <input type="time" id="time-other-input" class="text-input time-native-input">
+    <input type="time" id="time-other-input" class="text-input time-native-input" value="00:00">
     <p id="time-other-error" class="field-error"></p>
     <button id="time-other-confirm" class="btn btn-yes" style="margin-top: 16px;">Confirmar</button>
   `);

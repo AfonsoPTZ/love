@@ -33,7 +33,21 @@
   <button id="music-next" class="music-btn" aria-label="Próxima">
     <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
   </button>
+
+  <button id="music-playlist-btn" class="music-btn" aria-label="Abrir playlist">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 6h13v2H4zm0 5h13v2H4zm0 5h9v2H4zM19 10v6.28a2 2 0 1 0 1 1.72V12h2v-2z"/></svg>
+  </button>
 </div>
+
+<div id="playlist-panel" class="playlist-panel">
+  <div class="playlist-header">
+    <span class="playlist-title">Anjo q mora ao meu lado</span>
+    <button id="playlist-close-btn" class="music-btn" aria-label="Fechar playlist">✕</button>
+  </div>
+  <div id="playlist-list" class="playlist-list"></div>
+</div>
+<div id="playlist-backdrop" class="playlist-backdrop"></div>
+
 <audio id="audio-player" preload="metadata" loop="false"></audio>
 
 <div id="app">
