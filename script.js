@@ -8,11 +8,11 @@ document.addEventListener('touchmove', (e) => {
 const PLAYLIST = [
   { title: 'Céu Azul — Charlie Brown Jr', src: 'music/Charlie Brown Jr - Céu Azul.mp3' },
   { title: 'Velha Infância — Tribalistas', src: 'music/tribalistas-velha-infancia_mV2jb8Ys.mp3' },
-  { title: 'Sutilmente', src: 'music/01. Sutilmente .mp3' },
+  { title: 'Sutilmente — Skank ', src: 'music/01. Sutilmente .mp3' },
   { title: 'Partilhar — Rubel', src: 'music/Rubel_-_Partilhar_(mp3.pm) (2).mp3' },
   { title: 'Ela Só Quer Paz — Projota', src: 'music/projota-ela-so-quer-paz_2yJtSJVM.mp3' },
   { title: 'Deixe-me Ir — 1Kilo', src: 'music/01-deixe-me-ir-1kilo-2.mp3' },
-  { title: 'Nosso Sonho', src: 'music/05. Nosso sonho.mp3' },
+  { title: 'Nosso Sonho  — Claudinho e Buchecha', src: 'music/05. Nosso sonho.mp3' },
   { title: 'Perdição — L7nnon', src: 'music/9 L7NNON   Perdição   HHR.mp3' },
   { title: 'Preta — Hungria Hip Hop', src: 'music/Hungria Hip Hop feat.João CarlosMartins - PRETA(Música Nova).mp3' },
   { title: 'Meu Lugar — Onze:20', src: 'music/Onze20_-_Meu_Lugar_(mp3.pm).mp3' },
