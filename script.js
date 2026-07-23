@@ -30,9 +30,39 @@ function loadTrack(index, autoplay) {
   currentTrack = (index + PLAYLIST.length) % PLAYLIST.length;
   audio.src = encodeURI(PLAYLIST[currentTrack].src);
   musicTrackName.textContent = PLAYLIST[currentTrack].title;
+  updateMediaSessionMetadata();
   if (autoplay) audio.play().catch(() => {});
   if (playlistPanel && playlistPanel.classList.contains('open')) renderPlaylistList();
 }
+
+// ---- integração com os controles de mídia do sistema (notificação/tela de bloqueio) ----
+function updateMediaSessionMetadata() {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: PLAYLIST[currentTrack].title,
+    artist: 'Vem comigo?',
+    artwork: [
+      { src: 'images.jpg', sizes: '512x512', type: 'image/jpeg' },
+    ],
+  });
+}
+
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => audio.play().catch(() => {}));
+  navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', () => loadTrack(currentTrack - 1, true));
+  navigator.mediaSession.setActionHandler('nexttrack', () => loadTrack(currentTrack + 1, true));
+  navigator.mediaSession.setActionHandler('seekto', (details) => {
+    if (details.seekTime != null) audio.currentTime = details.seekTime;
+  });
+}
+
+audio.addEventListener('play', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+});
+audio.addEventListener('pause', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+});
 
 musicPlayPauseBtn.addEventListener('click', () => {
   if (audio.paused) {
