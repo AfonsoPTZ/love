@@ -31,8 +31,24 @@ function loadTrack(index, autoplay) {
   audio.src = encodeURI(PLAYLIST[currentTrack].src);
   musicTrackName.textContent = PLAYLIST[currentTrack].title;
   updateMediaSessionMetadata();
-  if (autoplay) audio.play().catch(() => {});
+  if (autoplay) tryPlay();
   if (playlistPanel && playlistPanel.classList.contains('open')) renderPlaylistList();
+}
+
+// no celular, trocar de música com a aba em segundo plano às vezes é bloqueado
+// pelo navegador; se falhar, tenta de novo assim que a aba voltar a ficar visível
+function tryPlay() {
+  audio.play().catch(() => {
+    const resume = () => {
+      audio.play().catch(() => {});
+      document.removeEventListener('visibilitychange', resume);
+      document.removeEventListener('touchstart', resume);
+      document.removeEventListener('click', resume);
+    };
+    document.addEventListener('visibilitychange', resume);
+    document.addEventListener('touchstart', resume);
+    document.addEventListener('click', resume);
+  });
 }
 
 // ---- integração com os controles de mídia do sistema (notificação/tela de bloqueio) ----
@@ -120,6 +136,7 @@ audio.addEventListener('pause', () => {
   iconPause.style.display = 'none';
 });
 audio.addEventListener('ended', () => loadTrack(currentTrack + 1, true));
+audio.addEventListener('error', () => loadTrack(currentTrack + 1, true));
 audio.addEventListener('timeupdate', () => {
   if (audio.duration) {
     musicProgressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
